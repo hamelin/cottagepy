@@ -1,0 +1,28 @@
+[project]
+name = "cottagepy"
+version = "0.0.1"
+description = "Framework for interactive from-within application development"
+readme = "README.md"
+authors = [
+    { name = "Benoit Hamelin", email = "benoit@benoithamelin.com" }
+]
+maintainers = [{name = "Benoit Hamelin", email = "benoit.hamelin@gmail.com"}]
+requires-python = ">=3.11"
+keywords = ["ipython", "development", "fromwithin"]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Development Status :: 1 - Planning",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+cottagepy = "cottagepy.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11.0"]
+build-backend = "uv_build"
