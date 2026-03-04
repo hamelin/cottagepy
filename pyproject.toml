@@ -20,6 +20,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/hamelin/cottagepy"
+
 [project.scripts]
 cottagepy = "cottagepy.__main__:main"
 
