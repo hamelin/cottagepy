@@ -1,9 +1,9 @@
-from . import hello
+# from . import hello
 
 
 def main() -> None:
-    print(hello())
+    print("Hello world")
 
-    
+
 if __name__ == "__main__":
     main()
