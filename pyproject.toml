@@ -29,3 +29,11 @@ cottagepy = "cottagepy.__main__:main"
 [build-system]
 requires = ["uv_build>=0.10.4,<0.11.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "mypy>=1.19.1",
+    "mypy-extensions>=1.1.0",
+    "pytest>=9.0.2",
+]
