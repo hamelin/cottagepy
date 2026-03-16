@@ -1,10 +1,11 @@
 from contextlib import closing
+from datetime import datetime
 import pytest  # noqa
 
-from cottagepy import Database
+from cottagepy import CODE_MAIN, Database
 
 
-def test_set_up_cottage(db_cottage: Database) -> None:
+def test_set_up_cottage(db_cottage: Database, ts_main: datetime) -> None:
     with closing(db_cottage.cursor()) as cur:
         cur.execute(
             """
@@ -27,8 +28,6 @@ def test_set_up_cottage(db_cottage: Database) -> None:
         cur.execute(
             """
             select sum(num) from (
-                select count(*) as num from _modules_
-                union
                 select count(*) as num from _requirements_
                 union
                 select count(*) as num from _resources_
@@ -36,3 +35,5 @@ def test_set_up_cottage(db_cottage: Database) -> None:
             """,
         )
         assert [(0,)] == list(cur)
+        cur.execute("select * from _modules_")
+        assert [("__main__", ts_main.isoformat(), "", CODE_MAIN)] == list(cur)
