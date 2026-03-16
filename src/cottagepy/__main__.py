@@ -4,7 +4,7 @@ from pathlib import Path
 import sqlite3
 import sys
 
-from . import set_up
+from . import set_up_db
 
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
@@ -64,7 +64,7 @@ def main() -> None:
     match ns.command:
         case "setup":
             with sqlite3.connect(ns.file) as db:
-                set_up(db)
+                set_up_db(db)
 
         case "run":
             raise NotImplementedError()
