@@ -36,4 +36,4 @@ def test_set_up_cottage(db_cottage: Database, ts_main: datetime) -> None:
         )
         assert [(0,)] == list(cur)
         cur.execute("select * from _modules_")
-        assert [("__main__", ts_main.isoformat(), "", CODE_MAIN)] == list(cur)
+        assert [("__main__", ts_main.isoformat(), None, None, CODE_MAIN)] == list(cur)

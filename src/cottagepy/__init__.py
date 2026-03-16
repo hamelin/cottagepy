@@ -24,6 +24,7 @@ def set_up(db: Database, ts_main: datetime | None = None) -> Database:
                 name text,
                 iso8601 text,
                 version text,
+                spec text,
                 code text
             );
 
@@ -39,8 +40,8 @@ def set_up(db: Database, ts_main: datetime | None = None) -> Database:
         )
         cur.execute(
             """
-            insert into _modules_(name, iso8601, version, code)
-            values ('__main__', :iso8601, '', :code)
+            insert into _modules_(name, iso8601, code)
+            values ('__main__', :iso8601, :code)
             """,
             {"iso8601": ts.isoformat(), "code": CODE_MAIN},
         )
