@@ -7,7 +7,7 @@ from typing import cast
 Database = Connection
 
 
-CODE_MAIN = """
+CODE_MAIN = """\
 print("Welcome to my cottage!")
 """
 
