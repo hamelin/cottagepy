@@ -39,6 +39,18 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
         type=Path,
         help="Path to cottage database to run.",
     )
+    cmd_run.add_argument(
+        "-e",
+        "--entry-point",
+        help="Set an alternative entry point (default is the __main__ module).",
+        default="__main__",
+    )
+    cmd_run.add_argument(
+        "args",
+        nargs="*",
+        default=[],
+        help="Arguments passed to the cottage's entry point.",
+    )
 
     ns = parser.parse_args(args)
     if ns.command is None:
