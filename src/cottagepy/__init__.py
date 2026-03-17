@@ -1,4 +1,3 @@
-import code
 from datetime import datetime
 
 from .database import cursor, Database  # noqa
@@ -6,10 +5,10 @@ from .modules import put as put_module
 
 
 ENTRY_POINT_INIT = """\
-from cottagepy import repl
+from cottagepy.repl import run
 
 if __name__ == "__main__":
-    repl()
+    run(cottage)
 """
 
 
