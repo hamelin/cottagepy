@@ -42,7 +42,7 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
     cmd_run.add_argument(
         "-e",
         "--entry-point",
-        help="Set an alternative entry point (default is the __main__ module).",
+        help="Set an alternative entry point (default is the __main__ module of the cottage database).",
         default="__main__",
     )
     cmd_run.add_argument(
