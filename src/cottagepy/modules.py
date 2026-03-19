@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+from packaging.requirements import Requirement
+import sqlite3
 from typing import cast
 
 from .database import cursor, Database
@@ -62,4 +64,35 @@ def put(
             values (:name, :resource)
             """,
             {"name": name, "resource": resource},
+        )
+
+
+def get_requirements(db: Database) -> list[Requirement]:
+    try:
+        with cursor(db) as cur:
+            cur.execute("select req from _requirements_")
+            return [Requirement(req) for req, in cur]
+    except sqlite3.Error:
+        return []
+
+
+def put_requirement(db: Database, req: str | Requirement) -> None:
+    if isinstance(req, str):
+        req = Requirement(req)
+    with cursor(db) as cur:
+        cur.executescript(
+            """
+            create table if not exists _requirements_(
+                name text primary key unique not null,
+                req text not null
+            );
+            """,
+        )
+        cur.execute(
+            """
+            insert into _requirements_(name, req)
+            values (:name, :req)
+            on conflict(name) do update set req = excluded.req
+            """,
+            {"name": req.name, "req": str(req)},
         )

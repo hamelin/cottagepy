@@ -62,8 +62,11 @@ wheels = [
 
 [[package]]
 name = "cottagepy"
-version = "0.0.1"
+version = "0.0.2"
 source = { editable = "." }
+dependencies = [
+    { name = "packaging" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -76,6 +79,7 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "packaging", specifier = ">=26.0" }]
 
 [package.metadata.requires-dev]
 dev = [
