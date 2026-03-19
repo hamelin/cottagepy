@@ -25,3 +25,26 @@ def test_replace_requirement(db: Database) -> None:
     modules.put_requirement(db, "requests>=2.32")
     assert [Requirement("requests>=2.32"),
             Requirement("pandas>=3")] == modules.get_requirements(db)
+
+
+@pytest.mark.parametrize(
+    "existing",
+    [
+        [],
+        ["requests>=2.32", "pandas>3"],
+    ],
+)
+def test_set_requirements(db: Database, existing: list[str]) -> None:
+    for req in existing:
+        modules.put_requirement(db, req)
+    modules.set_requirements(
+        db,
+        """\
+        numpy
+        scipy>1.11 requests<2.3
+        xarray>=2026.2.0
+        requests>=2.22
+        """
+    )
+    assert [Requirement(r) for r in ["numpy", "scipy>1.11", "requests>=2.22", "xarray>=2026.2.0"]
+            ] == modules.get_requirements(db)

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from packaging.requirements import Requirement
 import sqlite3
@@ -96,3 +97,18 @@ def put_requirement(db: Database, req: str | Requirement) -> None:
             """,
             {"name": req.name, "req": str(req)},
         )
+
+
+def set_requirements(
+    db: Database,
+    reqs: Sequence[str | Requirement] | str,
+) -> None:
+    if isinstance(reqs, str):
+        reqs = reqs.split()
+
+    put_requirement(db, "dummy")  # Ensures the _requirements_ table exists.
+    with cursor(db) as cur:
+        cur.executescript("delete from _requirements_; vacuum;")
+
+    for req in reqs:
+        put_requirement(db, req)
