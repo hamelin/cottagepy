@@ -29,10 +29,7 @@ def _gather_config(db: Database, id_config: int) -> _Config:
                     """,
                     dict(id_config=id_config),
                 ),
-                (
-                    f"Cottage database table repl does not have config ID {id_config}; "
-                    "falling back to latest configuration."
-                ),
+                f"Cottage database table repl does not have config ID {id_config}; falling back to latest configuration.",
             ),
             (
                 (
@@ -43,10 +40,7 @@ def _gather_config(db: Database, id_config: int) -> _Config:
                     limit 1
                     """,
                 ),
-                (
-                    "Cottage database repl does not carry any configuration. "
-                    "Falling back to defaults."
-                ),
+                "Cottage database repl does not carry any configuration. Falling back to defaults.",
             ),
         ]:
             with cursor(db) as cur:
