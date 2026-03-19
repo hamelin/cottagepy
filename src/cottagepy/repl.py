@@ -73,9 +73,7 @@ def run(
     readfunc: Callable[[str], str] | None = None,
 ) -> dict:
     config = _gather_config(db, id_config)
-    prompts = {
-        attr: getattr(sys, attr) for attr in ["ps1", "ps2"] if hasattr(sys, attr)
-    }
+    prompts = {attr: getattr(sys, attr) for attr in ["ps1", "ps2"] if hasattr(sys, attr)}
     try:
         if config.ps1 is not None:
             sys.ps1 = config.ps1

@@ -10,9 +10,7 @@ from cottagepy.__main__ import parse_args
     [
         (Namespace(command="setup", file=Path("cot.db")), ["setup", "cot.db"]),
         (
-            Namespace(
-                command="run", file=Path("cot.db"), entry_point="__main__", args=[]
-            ),
+            Namespace(command="run", file=Path("cot.db"), entry_point="__main__", args=[]),
             ["run", "cot.db"],
         ),
         (

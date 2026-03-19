@@ -35,9 +35,7 @@ def test_db_setup(db: Database, ts_ref: datetime) -> None:
         cur.execute("select name, version, spec, resource from _modules_")
         assert [("__main__", None, None, 1)] == list(cur)
         cur.execute("select rowid, name, iso8601, content from _resources_")
-        assert [
-            (1, "__main__", ts_ref.isoformat(), ENTRY_POINT_INIT.encode("utf-8"))
-        ] == list(cur)
+        assert [(1, "__main__", ts_ref.isoformat(), ENTRY_POINT_INIT.encode("utf-8"))] == list(cur)
 
 
 def test_redirection(capsys) -> None:
@@ -100,11 +98,7 @@ def repl_config_single(db: Database) -> Database:
 
 @contextmanager
 def checking_prompts_unchanged() -> Iterator[None]:
-    prompts = {
-        prompt: getattr(sys, prompt)
-        for prompt in ["ps1", "ps2"]
-        if hasattr(sys, prompt)
-    }
+    prompts = {prompt: getattr(sys, prompt) for prompt in ["ps1", "ps2"] if hasattr(sys, prompt)}
     yield
     for prompt, orig in prompts.items():
         assert orig == getattr(sys, prompt)
@@ -162,7 +156,9 @@ def test_repl_set_variables(db: Database) -> None:
         "a": 5,
         "b": "asdf",
         "__builtins__": __builtins__,
-    } == repl.run(db, readfunc=mock_input(["b = 'asdf'", "a = 5"]))
+    } == repl.run(
+        db, readfunc=mock_input(["b = 'asdf'", "a = 5"])
+    )
 
 
 @pytest.mark.parametrize(
