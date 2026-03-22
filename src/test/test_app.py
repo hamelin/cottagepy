@@ -8,7 +8,7 @@ from cottagepy.__main__ import parse_args
 @pytest.mark.parametrize(
     "expected,args",
     [
-        (Namespace(command="setup", file=Path("cot.db")), ["setup", "cot.db"]),
+        (Namespace(command="init", file=Path("cot.db")), ["init", "cot.db"]),
         (
             Namespace(command="run", file=Path("cot.db"), entry_point="__main__", args=[]),
             ["run", "cot.db"],
@@ -54,7 +54,7 @@ def test_parse_args_legal(expected: Namespace, args: list[str]) -> None:
     "args",
     [
         [],
-        ["setup"],
+        ["init"],
         ["run"],
         ["hey"],
     ],

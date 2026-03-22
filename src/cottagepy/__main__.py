@@ -4,7 +4,7 @@ from pathlib import Path
 import sqlite3
 import sys
 
-from . import set_up_db
+from . import init_db
 
 
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
@@ -18,12 +18,12 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
         help="Commands",
     )
 
-    cmd_setup = subparsers.add_parser(
-        "setup",
+    cmd_init = subparsers.add_parser(
+        "init",
         help="Set up a new cottage database.",
         description="Set up a new cottage database.",
     )
-    cmd_setup.add_argument(
+    cmd_init.add_argument(
         "file",
         type=Path,
         help="Path to the cottage database to set up.",
@@ -62,9 +62,9 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
 def main() -> None:
     ns = parse_args()
     match ns.command:
-        case "setup":
+        case "init":
             with sqlite3.connect(ns.file) as db:
-                set_up_db(db)
+                init_db(db)
 
         case "run":
             raise NotImplementedError()

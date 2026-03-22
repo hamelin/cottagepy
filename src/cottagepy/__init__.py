@@ -20,7 +20,7 @@ def diff_strings(left: str, right: str) -> str:
 _DELTA_INIT = diff_strings("", ENTRY_POINT_INIT)
 
 
-def set_up_db(db: Database, ts_main: datetime | None = None) -> Database:
+def init_db(db: Database, ts_main: datetime | None = None) -> Database:
     add_delta(
         db,
         module="__main__",
