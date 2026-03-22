@@ -75,6 +75,6 @@ def connection(db: Database | None = None) -> Iterator[sqlite3.Connection]:
 
 
 @contextmanager
-def cursor(db: Database) -> Iterator[sqlite3.Cursor]:
+def cursor(db: Database | None = None) -> Iterator[sqlite3.Cursor]:
     with connection(db) as dbx, closing(dbx.cursor()) as cur:
         yield cur

@@ -12,6 +12,11 @@ def ts_ref() -> datetime:
 
 
 @pytest.fixture
-def db(ts_ref: datetime) -> Iterator[cottagepy.Database]:
+def db_bare() -> Iterator[cottagepy.Database]:
     with sqlite3.connect(":memory:") as db_:
-        yield cottagepy.init_db(db_, ts_main=ts_ref)
+        yield db_
+
+
+@pytest.fixture
+def db(db_bare: cottagepy.Database, ts_ref: datetime) -> cottagepy.Database:
+    return cottagepy.init_db(db_bare, ts_main=ts_ref)

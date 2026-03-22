@@ -1,6 +1,7 @@
 from datetime import datetime
 from difflib import unified_diff
 
+from . import requirements as _requirements_
 from .database import connection, cursor, Database  # noqa
 from .modules import add_delta
 
@@ -20,11 +21,16 @@ def diff_strings(left: str, right: str) -> str:
 _DELTA_INIT = diff_strings("", ENTRY_POINT_INIT)
 
 
-def init_db(db: Database, ts_main: datetime | None = None) -> Database:
+def init_db(
+    db: Database,
+    requirements: list[str] = [],
+    ts_main: datetime | None = None,
+) -> Database:
     add_delta(
         db,
         module="__main__",
         ts=ts_main,
         delta=_DELTA_INIT,
     )
+    _requirements_.set(db=db, requirements=requirements)
     return db

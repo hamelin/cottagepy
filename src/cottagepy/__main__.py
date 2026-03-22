@@ -7,6 +7,11 @@ import sys
 from . import init_db
 
 
+def _requirements_file(path_: str) -> str:
+    with (sys.stdin if path_ == "-" else open(path_, mode="r", encoding="utf-8")) as file:
+        return file.read()
+
+
 def parse_args(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         description="""
@@ -27,6 +32,28 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
         "file",
         type=Path,
         help="Path to the cottage database to set up.",
+    )
+    cmd_init.set_defaults(requirements=[])
+    cmd_init.add_argument(
+        "-w",
+        "--with",
+        action="append",
+        dest="requirements",
+        help="""
+            Add constraints to the cottage's dependency requirements. Can be used more than once.
+        """,
+    )
+    cmd_init.add_argument(
+        "-r",
+        "--requirements",
+        action="append",
+        type=_requirements_file,
+        dest="requirements",
+        help="""
+            Append the contents of the given file to the cottage's dependency requirements.
+            If the given path is -, standard input is read for package specifications.
+            Can be used more than once (with different files, presumably).
+        """,
     )
 
     cmd_run = subparsers.add_parser(

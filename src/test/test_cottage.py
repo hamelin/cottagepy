@@ -9,11 +9,20 @@ from cottagepy import (
     cursor,
     Database,
     _DELTA_INIT,
+    init_db,
     repl,
 )
 
 
-def test_db_setup(db: Database, ts_ref: datetime) -> None:
+@pytest.mark.parametrize(
+    "requirements",
+    [
+        [],
+        ["numpy\npandas\npyarrow\n", "requests>3\ntextual>=8,<9\n"],
+    ],
+)
+def test_db_setup(db_bare: Database, ts_ref: datetime, requirements: list[str]) -> None:
+    db = init_db(db_bare, requirements=requirements, ts_main=ts_ref)
     with cursor(db) as cur:
         cur.execute(
             """
@@ -30,9 +39,16 @@ def test_db_setup(db: Database, ts_ref: datetime) -> None:
         )
         assert [
             ("table", "_code_"),
+            ("table", "_requirements_"),
         ] == list(cur)
         cur.execute("select module, iso8601, version, delta from _code_")
         assert [("__main__", ts_ref.isoformat(), None, _DELTA_INIT)] == list(cur)
+
+        requirements_normalized = [
+            r for r in (req.strip() for req in " ".join(requirements).split()) if r
+        ]
+        cur.execute("select spec, resolved from _requirements_")
+        assert [(r, None) for r in requirements_normalized] == list(cur)
 
 
 def test_redirection(capsys) -> None:
