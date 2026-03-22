@@ -24,6 +24,9 @@ _DELTA_INIT = diff_strings("", ENTRY_POINT_INIT)
 def init_db(
     db: Database,
     requirements: list[str] = [],
+    python: str | None = None,
+    managed: bool = True,
+    download_auto: bool = True,
     ts_main: datetime | None = None,
 ) -> Database:
     add_delta(
@@ -33,4 +36,30 @@ def init_db(
         delta=_DELTA_INIT,
     )
     _requirements_.set(db=db, requirements=requirements)
+    _add_python_config(db=db, python=python, managed=managed, download_auto=download_auto)
     return db
+
+
+def _add_python_config(
+    db: Database | None = None,
+    python: str | None = None,
+    managed: bool = True,
+    download_auto: bool = True,
+) -> None:
+    with cursor(db) as cur:
+        cur.executescript(
+            """
+            create table if not exists _python_(
+                python text,
+                managed int,
+                download_auto int
+            );
+            """,
+        )
+        cur.execute(
+            """
+            insert into _python_(python, managed, download_auto)
+            values (:python, :managed, :download_auto)
+            """,
+            {"python": python, "managed": int(managed), "download_auto": int(download_auto)},
+        )

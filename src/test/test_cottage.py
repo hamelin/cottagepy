@@ -15,19 +15,35 @@ from cottagepy import (
 
 
 @pytest.mark.parametrize(
-    "requirements",
+    "requirements,python,managed,download_auto",
     [
-        [],
-        ["numpy\npandas\npyarrow\n", "requests>3\ntextual>=8,<9\n"],
+        ([], None, True, True),
+        (["numpy\npandas\npyarrow\n", "requests>3\ntextual>=8,<9\n"], None, True, True),
+        ([], "3.12", True, True),
+        ([], None, False, False),
     ],
 )
-def test_db_setup(db_bare: Database, ts_ref: datetime, requirements: list[str]) -> None:
-    db = init_db(db_bare, requirements=requirements, ts_main=ts_ref)
+def test_db_setup(
+    db_bare: Database,
+    ts_ref: datetime,
+    requirements: list[str],
+    python: str | None,
+    managed: bool,
+    download_auto: bool
+) -> None:
+    db = init_db(
+        db_bare,
+        requirements=requirements,
+        ts_main=ts_ref,
+        python=python,
+        managed=managed,
+        download_auto=download_auto,
+    )
     with cursor(db) as cur:
         cur.execute(
             """
             with sources_cottage_py(name) as (
-                values ('_code_'), ('_requirements_')
+                values ('_code_'), ('_python_'), ('_requirements_')
             )
             select type, sqlite_schema.name
             from sqlite_schema
@@ -39,6 +55,7 @@ def test_db_setup(db_bare: Database, ts_ref: datetime, requirements: list[str]) 
         )
         assert [
             ("table", "_code_"),
+            ("table", "_python_"),
             ("table", "_requirements_"),
         ] == list(cur)
         cur.execute("select module, iso8601, version, delta from _code_")
@@ -49,6 +66,9 @@ def test_db_setup(db_bare: Database, ts_ref: datetime, requirements: list[str]) 
         ]
         cur.execute("select spec, resolved from _requirements_")
         assert [(r, None) for r in requirements_normalized] == list(cur)
+
+        cur.execute("select python, managed, download_auto from _python_")
+        assert [(python, int(managed), int(download_auto))] == list(cur)
 
 
 def test_redirection(capsys) -> None:

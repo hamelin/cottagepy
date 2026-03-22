@@ -122,7 +122,13 @@ def main() -> None:
     match ns.command:
         case "init":
             with sqlite3.connect(ns.file) as db:
-                init_db(db)
+                init_db(
+                    db,
+                    requirements=ns.requirements,
+                    python=ns.python,
+                    managed=ns.managed,
+                    download_auto=ns.download_auto,
+                )
 
         case "run":
             raise NotImplementedError()
