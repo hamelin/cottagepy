@@ -1,7 +1,8 @@
 from datetime import datetime
+from difflib import unified_diff
 
-from .database import cursor, Database  # noqa
-from .modules import put as put_module
+from .database import connection, cursor, Database  # noqa
+from .modules import add_delta
 
 
 ENTRY_POINT_INIT = """\
@@ -12,11 +13,18 @@ if __name__ == "__main__":
 """
 
 
+def diff_strings(left: str, right: str) -> str:
+    return "".join(unified_diff(left.splitlines(keepends=True), right.splitlines(keepends=True)))
+
+
+_DELTA_INIT = diff_strings("", ENTRY_POINT_INIT)
+
+
 def set_up_db(db: Database, ts_main: datetime | None = None) -> Database:
-    put_module(
+    add_delta(
         db,
-        name="__main__",
-        code=ENTRY_POINT_INIT,
+        module="__main__",
         ts=ts_main,
+        delta=_DELTA_INIT,
     )
     return db

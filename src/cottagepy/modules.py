@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import datetime
 from packaging.requirements import Requirement
 import sqlite3
 from typing import cast
@@ -7,64 +7,43 @@ from typing import cast
 from .database import cursor, Database
 
 
-def put(
+def _set_up(cur: sqlite3.Cursor) -> None:
+    cur.executescript(
+        """
+        create table if not exists _code_(
+            module text not null,
+            iso8601 text not null default(datetime('now', 'localtime')),
+            version text,
+            delta text not null
+        );
+        """
+    )
+
+
+def add_delta(
     db: Database,
-    name: str,
-    code: str,
-    spec: str | None = None,
-    version: str | None = None,
+    module: str,
+    delta: str,
     ts: datetime | None = None,
+    version: str | None = None,
 ) -> None:
-    if not name:
-        raise ValueError("Name cannot be an empty string")
+    if not module:
+        raise ValueError("Module name cannot be an empty string")
 
     ts_ = cast(datetime, ts or datetime.now())
-    if not ts_.tzinfo:
-        ts_ = ts_.replace(tzinfo=timezone.utc)
-
     with cursor(db) as cur:
-        cur.executescript(
-            """
-            create table if not exists _resources_(
-                name text not null,
-                iso8601 text not null,
-                content blob,
-                constraint pkey primary key (name, iso8601) on conflict fail
-            );
-
-            create table if not exists _modules_(
-                name text primary key,
-                version text,
-                spec text,
-                resource not null references _resources_(rowid) on delete restrict
-            );
-
-            create view if not exists _code_ as
-            select
-                _modules_.name as name,
-                content as code
-            from _modules_
-            inner join _resources_ on (_modules_.resource = _resources_.rowid);
-            """
-        )
+        _set_up(cur)
         cur.execute(
             """
-            insert into _resources_(name, iso8601, content)
-            values (:name, :iso8601, :content)
+            insert into _code_(module, iso8601, version, delta)
+            values (:module, :iso8601, :version, :delta)
             """,
             {
-                "name": name,
+                "module": module,
                 "iso8601": ts_.isoformat(),
-                "content": code.encode("utf-8"),
+                "version": version,
+                "delta": delta,
             },
-        )
-        resource = cur.lastrowid
-        cur.execute(
-            """
-            insert or replace into _modules_(name, resource)
-            values (:name, :resource)
-            """,
-            {"name": name, "resource": resource},
         )
 
 
