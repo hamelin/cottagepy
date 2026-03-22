@@ -55,6 +55,37 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
             Can be used more than once (with different files, presumably).
         """,
     )
+    cmd_init.add_argument(
+        "-p",
+        "--python",
+        help="Set the Python version or interpreter path to use when running this cottage.",
+    )
+    cmd_init.set_defaults(managed_python=True)
+    cmd_init.add_argument(
+        "--managed-python",
+        action="store_true",
+        dest="managed_python",
+        help="""
+            Enable usage of a UV-managed Python interpreter if CottagePy is allowed to choose.
+            This is the default.
+        """,
+    )
+    cmd_init.add_argument(
+        "--no-managed-python",
+        action="store_false",
+        dest="managed_python",
+        help="Disable usage of UV-managed Python interpreters.",
+    )
+    cmd_init.add_argument(
+        "--no-python-downloads",
+        action="store_false",
+        dest="python_downloads",
+        default=True,
+        help="""
+            If usage of UV-managed Python interpreters is enabled, this forbids downloading new
+            ones automatically.
+        """,
+    )
 
     cmd_run = subparsers.add_parser(
         "run",

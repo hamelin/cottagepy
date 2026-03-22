@@ -28,13 +28,36 @@ def stdin_requirements() -> Iterator[None]:
 @pytest.mark.parametrize(
     "expected,args",
     [
-        (Namespace(command="init", file=Path("cot.db"), requirements=[]), ["init", "cot.db"]),
         (
-            Namespace(command="init", file=Path("cot.db"), requirements=["numpy"]),
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=[],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
+            ), ["init", "cot.db"]
+        ),
+        (
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=["numpy"],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
+            ),
             ["init", "--with", "numpy", "cot.db"],
         ),
         (
-            Namespace(command="init", file=Path("cot.db"), requirements=["numpy"]),
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=["numpy"],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
+            ),
             ["init", "-w", "numpy", "cot.db"],
         ),
         (
@@ -42,6 +65,9 @@ def stdin_requirements() -> Iterator[None]:
                 command="init",
                 file=Path("cot.db"),
                 requirements=["numpy", "pandas", "requests aiosqlite"],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
             ),
             ["init", "-w", "numpy", "--with", "pandas", "cot.db", "-w", "requests aiosqlite"],
         ),
@@ -50,12 +76,20 @@ def stdin_requirements() -> Iterator[None]:
                 command="init",
                 file=Path("cot.db"),
                 requirements=["numpy\npandas\npyarrow\n"],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
             ),
             ["init", "-r", "{requirements_file}", "cot.db"],
         ),
         (
             Namespace(
-                command="init", file=Path("cot.db"), requirements=["numpy\npandas\npyarrow\n"]
+                command="init",
+                file=Path("cot.db"),
+                requirements=["numpy\npandas\npyarrow\n"],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
             ),
             ["init", "cot.db", "--requirements", "{requirements_file}"],
         ),
@@ -67,8 +101,55 @@ def stdin_requirements() -> Iterator[None]:
                     "numpy\npandas\npyarrow\n",
                     "requests>3\ntextual>=8,<9\n",
                 ],
+                python=None,
+                managed_python=True,
+                python_downloads=True,
             ),
             ["init", "cot.db", "--requirements", "{requirements_file}", "-r", "-"],
+        ),
+        (
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=[],
+                python="3.12",
+                managed_python=True,
+                python_downloads=True,
+            ),
+            ["init", "-p", "3.12", "cot.db"],
+        ),
+        (
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=[],
+                python="3.11",
+                managed_python=True,
+                python_downloads=True,
+            ),
+            ["init", "--managed-python", "cot.db", "--python", "3.11"],
+        ),
+        (
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=[],
+                python=None,
+                managed_python=False,
+                python_downloads=True,
+            ),
+            ["init", "--no-managed-python", "cot.db"],
+        ),
+        (
+            Namespace(
+                command="init",
+                file=Path("cot.db"),
+                requirements=[],
+                python=None,
+                managed_python=True,
+                python_downloads=False,
+            ),
+            ["init", "--no-python-downloads", "cot.db"],
         ),
         (
             Namespace(command="run", file=Path("cot.db"), entry_point="__main__", args=[]),
@@ -123,6 +204,7 @@ def test_parse_args_legal(
     [
         [],
         ["init"],
+        ["init", "-p", "3.12", "--python", "3.12"],
         ["run"],
         ["hey"],
     ],
