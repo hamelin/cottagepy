@@ -5,7 +5,7 @@ import sqlite3
 import sys
 import warnings
 
-from .database import cursor, Database
+from .database import cursor, MaybeDB
 
 
 @dataclass
@@ -16,7 +16,7 @@ class _Config:
     ps2: str | None = None
 
 
-def _gather_config(db: Database, id_config: int) -> _Config:
+def _gather_config(db: MaybeDB, id_config: int) -> _Config:
     try:
         for query_params, warning in [
             (
@@ -62,7 +62,7 @@ def _gather_config(db: Database, id_config: int) -> _Config:
 
 
 def run(
-    db: Database,
+    db: MaybeDB,
     id_config: int = 0,
     readfunc: Callable[[str], str] | None = None,
 ) -> dict:
@@ -92,7 +92,7 @@ def run(
 
 
 def add_config(
-    db: Database,
+    db: MaybeDB,
     banner: str | None = None,
     exitmsg: str | None = None,
     ps1: str | None = None,

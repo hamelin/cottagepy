@@ -1,80 +1,52 @@
 from collections.abc import Iterator
-from contextlib import AbstractContextManager, closing, contextmanager
-from dataclasses import dataclass
+from contextlib import closing, contextmanager
 from pathlib import Path
 import sqlite3
-from typing import Protocol
+from typing import Optional
 
 
-Database = sqlite3.Connection | Path | str
+Database = sqlite3.Connection
+MaybeDB = Optional[Database]
+_connection_cottage_db: MaybeDB = None
 
 
-class _CottageDatabase(Protocol):
-    def connect(self) -> AbstractContextManager[sqlite3.Connection]: ...
+@contextmanager
+def having_cottage_db(db: str | Path | Database) -> Iterator[None]:
+    global _connection_cottage_db
+    if _connection_cottage_db is not None:
+        raise ValueError(
+            "A database connection is already in place as cottage database; cannot change it."
+        )
 
-
-class _CottageDatabaseNotSet:
-    def connect(self) -> AbstractContextManager[sqlite3.Connection]:
-        raise ValueError("The global cottage database reference has not been set yet.")
-
-
-@dataclass
-class _CottageDatabasePermanent:
-    dbx: sqlite3.Connection
-
-    @contextmanager
-    def connect(self) -> Iterator[sqlite3.Connection]:
-        yield self.dbx
-
-
-@dataclass
-class _CottageDatabaseReference:
-    ref: str
-
-    @contextmanager
-    def connect(self) -> Iterator[sqlite3.Connection]:
-        with sqlite3.connect(self.ref) as dbx:
-            yield dbx
-
-
-COTTAGE: _CottageDatabase = _CottageDatabaseNotSet()
-
-
-def set_cottage_db(db: Database) -> None:
-    global COTTAGE
-    if COTTAGE is None:
-        if not db:
-            raise ValueError("Invalid cottage DB.")
-        elif db == ":memory:":
-            COTTAGE = _CottageDatabasePermanent(sqlite3.connect(":memory:"))
-        elif isinstance(db, sqlite3.Connection):
-            COTTAGE = _CottageDatabasePermanent(db)
-        else:
-            COTTAGE = _CottageDatabaseReference(str(db))
+    if not db:
+        raise ValueError("Invalid cottage DB.")
+    elif isinstance(db, (str, Path)):
+        _connection_cottage_db = sqlite3.connect(db)
+        with closing(_connection_cottage_db):
+            yield
+    elif isinstance(db, Database):
+        _connection_cottage_db = db
+        yield
     else:
-        raise ValueError("The cottage DB can only be set once, and then it becomes immutable.")
-    assert COTTAGE
+        raise TypeError(f"Wrong argument type: {type(db).__name__}")
+
+    _connection_cottage_db = None
+
+
+def _cottage_db(mdb: MaybeDB = None) -> Database:
+    if mdb is None:
+        if _connection_cottage_db is None:
+            raise ValueError("The global cottage database reference has not been set yet.")
+        return _connection_cottage_db
+    else:
+        return mdb
 
 
 @contextmanager
-def connection(db: Database | None = None) -> Iterator[sqlite3.Connection]:
-    match db:
-        case None:
-            with COTTAGE.connect() as dbx:
-                yield dbx
-        case sqlite3.Connection():
-            yield db
-        case str() | Path():
-            with sqlite3.connect(str(db)) as dbx:
-                yield dbx
-        case _:
-            raise RuntimeError("Unreachable")
+def cursor(db: MaybeDB = None) -> Iterator[sqlite3.Cursor]:
+    with _cottage_db(db) as dbx:
+        with closing(dbx.cursor()) as cur:
+            yield cur
 
 
-@contextmanager
-def cursor(db: Database | None = None) -> Iterator[sqlite3.Cursor]:
-    with connection(db) as dbx, closing(dbx.cursor()) as cur:
-        yield cur
-
-
-__all__ = ["cursor", "Database", "set_cottage_db"]
+__all__ = ["cursor", "Database", "MaybeDB", "having_cottage_db"]

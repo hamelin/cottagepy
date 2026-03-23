@@ -1,7 +1,7 @@
 from packaging.requirements import Requirement
 from sqlite3 import Cursor
 
-from .database import cursor, Database
+from .database import cursor, MaybeDB
 
 
 def _init(cur: Cursor) -> None:
@@ -15,7 +15,7 @@ def _init(cur: Cursor) -> None:
     )
 
 
-def get(db: Database | None = None) -> list[str]:
+def get(db: MaybeDB = None) -> list[str]:
     with cursor(db) as cur:
         _init(cur)
         cur.execute("select requirement from _requirements_")
@@ -25,7 +25,7 @@ def get(db: Database | None = None) -> list[str]:
     return reqs
 
 
-def set(requirements: list[str], db: Database | None = None) -> None:
+def set(requirements: list[str], db: MaybeDB = None) -> None:
     with cursor(db) as cur:
         _init(cur)
         cur.execute("delete from _requirements_")

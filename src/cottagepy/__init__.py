@@ -7,7 +7,7 @@ from tempfile import NamedTemporaryFile
 from uv import find_uv_bin
 
 from . import requirements as _requirements_
-from .database import connection, cursor, Database  # noqa
+from .database import cursor, Database
 from .documents import add_delta, set_metadata
 from ._log import log
 
@@ -134,3 +134,10 @@ def _cottage_invocation(
             "-m",
             "cottagepy._entry_point",
         ]
+
+
+__all__ = [
+    "Database",
+    "cursor",
+    "init_db",
+]

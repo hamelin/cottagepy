@@ -1,9 +1,10 @@
 from collections.abc import Iterator
+from contextlib import closing
 from datetime import datetime
 import pytest
 import sqlite3
 
-import cottagepy
+from cottagepy import Database, init_db
 
 
 @pytest.fixture
@@ -12,11 +13,11 @@ def ts_ref() -> datetime:
 
 
 @pytest.fixture
-def db_bare() -> Iterator[cottagepy.Database]:
-    with sqlite3.connect(":memory:") as db_:
+def db_bare() -> Iterator[Database]:
+    with closing(sqlite3.connect(":memory:")) as db_:
         yield db_
 
 
 @pytest.fixture
-def db(db_bare: cottagepy.Database, ts_ref: datetime) -> cottagepy.Database:
-    return cottagepy.init_db(db_bare, ts_main=ts_ref)
+def db(db_bare: Database, ts_ref: datetime) -> Database:
+    return init_db(db_bare, ts_main=ts_ref)

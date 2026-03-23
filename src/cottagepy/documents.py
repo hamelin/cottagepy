@@ -1,7 +1,7 @@
 from datetime import datetime
 import sqlite3
 
-from .database import cursor, Database
+from .database import cursor, MaybeDB
 
 
 def _set_up(cur: sqlite3.Cursor) -> None:
@@ -25,7 +25,7 @@ def _set_up(cur: sqlite3.Cursor) -> None:
 def add_delta(
     document: str,
     delta: str,
-    db: Database | None = None,
+    db: MaybeDB = None,
     ts: datetime | None = None,
     version: str | None = None,
 ) -> None:
@@ -49,7 +49,7 @@ def add_delta(
         )
 
 
-def set_metadata(document: str, language: str | None, db: Database | None = None) -> None:
+def set_metadata(document: str, language: str | None, db: MaybeDB = None) -> None:
     if not document:
         raise ValueError("Document name cannot be an empty string")
 
