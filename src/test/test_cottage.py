@@ -56,7 +56,7 @@ def test_db_setup(
         cur.execute(
             """
             with sources_cottage_py(name) as (
-                values ('_code_'), ('_python_'), ('_requirements_')
+                values ('_deltas_'), ('_metadata_'), ('_python_'), ('_requirements_')
             )
             select type, sqlite_schema.name
             from sqlite_schema
@@ -67,12 +67,16 @@ def test_db_setup(
             """,
         )
         assert [
-            ("table", "_code_"),
+            ("table", "_deltas_"),
+            ("table", "_metadata_"),
             ("table", "_python_"),
             ("table", "_requirements_"),
         ] == list(cur)
-        cur.execute("select module, iso8601, version, delta from _code_")
+
+        cur.execute("select document, iso8601, version, delta from _deltas_")
         assert [("__main__", ts_ref.isoformat(), None, _DELTA_INIT)] == list(cur)
+        cur.execute("select document, language from _metadata_")
+        assert [("__main__", "python")] == list(cur)
 
         cur.execute("select requirement, resolved from _requirements_")
         assert [(unp, None) for unp in unpacked] == list(cur)

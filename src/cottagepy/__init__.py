@@ -8,8 +8,8 @@ from uv import find_uv_bin
 
 from . import requirements as _requirements_
 from .database import connection, cursor, Database  # noqa
+from .documents import add_delta, set_metadata
 from ._log import log
-from .modules import add_delta
 
 
 ENTRY_POINT_INIT = """\
@@ -36,11 +36,12 @@ def init_db(
     ts_main: datetime | None = None,
 ) -> Database:
     add_delta(
-        db,
-        module="__main__",
+        db=db,
+        document="__main__",
         ts=ts_main,
         delta=_DELTA_INIT,
     )
+    set_metadata(db=db, document="__main__", language="python")
     _requirements_.set(db=db, requirements=requirements)
     _add_python_config(db=db, python=python, managed=managed, download_auto=download_auto)
     return db
