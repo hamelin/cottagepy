@@ -19,7 +19,7 @@ def get(db: Database | None = None) -> list[str]:
     with cursor(db) as cur:
         _init(cur)
         cur.execute("select requirement from _requirements_")
-        reqs = [r for r, in cur]
+        reqs = [r for (r,) in cur]
     if "cottagepy" not in {Requirement(r).name for r in reqs}:
         reqs.insert(0, "cottagepy")
     return reqs

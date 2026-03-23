@@ -8,7 +8,7 @@ from . import init_db
 
 
 def _requirements_file(path_: str) -> str:
-    with (sys.stdin if path_ == "-" else open(path_, mode="r", encoding="utf-8")) as file:
+    with sys.stdin if path_ == "-" else open(path_, mode="r", encoding="utf-8") as file:
         return file.read()
 
 

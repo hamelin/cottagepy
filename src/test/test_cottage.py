@@ -212,9 +212,7 @@ def test_repl_set_variables(db: Database) -> None:
         "a": 5,
         "b": "asdf",
         "__builtins__": __builtins__,
-    } == repl.run(
-        db, readfunc=mock_input(["b = 'asdf'", "a = 5"])
-    )
+    } == repl.run(db, readfunc=mock_input(["b = 'asdf'", "a = 5"]))
 
 
 @pytest.mark.parametrize(

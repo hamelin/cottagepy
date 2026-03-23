@@ -36,7 +36,8 @@ def stdin_requirements() -> Iterator[None]:
                 python=None,
                 managed_python=True,
                 python_downloads=True,
-            ), ["init", "cot.db"]
+            ),
+            ["init", "cot.db"],
         ),
         (
             Namespace(
@@ -69,7 +70,16 @@ def stdin_requirements() -> Iterator[None]:
                 managed_python=True,
                 python_downloads=True,
             ),
-            ["init", "-w", "numpy", "--with", "pandas", "cot.db", "-w", "requests aiosqlite"],
+            [
+                "init",
+                "-w",
+                "numpy",
+                "--with",
+                "pandas",
+                "cot.db",
+                "-w",
+                "requests aiosqlite",
+            ],
         ),
         (
             Namespace(
@@ -194,9 +204,9 @@ def test_parse_args_legal(
     file_requirements: Path,
     stdin_requirements: None,
 ) -> None:
-    assert expected == parse_args([
-        arg.format(requirements_file=str(file_requirements)) for arg in args
-    ])
+    assert expected == parse_args(
+        [arg.format(requirements_file=str(file_requirements)) for arg in args]
+    )
 
 
 @pytest.mark.parametrize(

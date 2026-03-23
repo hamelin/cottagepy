@@ -20,6 +20,7 @@ classifiers = [
 ]
 dependencies = [
     "packaging>=26.0",
+    "ruff>=0.15.7",
 ]
 
 [project.urls]
@@ -41,6 +42,12 @@ dev = [
     "python-lsp-server>=1.14.0",
     "yapf>=0.43.0",
 ]
+
+[tool.ruff]
+line-length = 99
+
+[tool.ruff.lint]
+ignore = ["E501"]
 
 [tool.yapf]
 align_closing_bracket_with_visual_indent = true

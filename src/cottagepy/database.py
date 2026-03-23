@@ -10,13 +10,10 @@ Database = sqlite3.Connection | Path | str
 
 
 class _CottageDatabase(Protocol):
-
-    def connect(self) -> AbstractContextManager[sqlite3.Connection]:
-        ...
+    def connect(self) -> AbstractContextManager[sqlite3.Connection]: ...
 
 
 class _CottageDatabaseNotSet:
-
     def connect(self) -> AbstractContextManager[sqlite3.Connection]:
         raise ValueError("The global cottage database reference has not been set yet.")
 

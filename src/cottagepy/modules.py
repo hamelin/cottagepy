@@ -51,7 +51,7 @@ def get_requirements(db: Database) -> list[Requirement]:
     try:
         with cursor(db) as cur:
             cur.execute("select req from _requirements_")
-            return [Requirement(req) for req, in cur]
+            return [Requirement(req) for (req,) in cur]
     except sqlite3.Error:
         return []
 

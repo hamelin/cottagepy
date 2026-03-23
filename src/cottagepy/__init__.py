@@ -61,5 +61,9 @@ def _add_python_config(
             insert into _python_(python, managed, download_auto)
             values (:python, :managed, :download_auto)
             """,
-            {"python": python, "managed": int(managed), "download_auto": int(download_auto)},
+            {
+                "python": python,
+                "managed": int(managed),
+                "download_auto": int(download_auto),
+            },
         )

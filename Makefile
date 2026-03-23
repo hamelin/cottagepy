@@ -12,7 +12,7 @@ type: reformat
 	$(UV_RUN) mypy --ignore-missing-imports src
 
 pep8: reformat
-	$(UV_RUN) flake8 src
+	$(UV_RUN) ruff check src
 
 reformat:
-	$(UV_RUN) yapf -impr src
+	$(UV_RUN) ruff format src
