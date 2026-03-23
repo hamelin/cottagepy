@@ -11,25 +11,33 @@ from cottagepy import (
     _DELTA_INIT,
     init_db,
     repl,
+    requirements,
 )
 
 
 @pytest.mark.parametrize(
-    "requirements,python,managed,download_auto",
+    "requirements,unpacked,python,managed,download_auto",
     [
-        ([], None, True, True),
-        (["numpy\npandas\npyarrow\n", "requests>3\ntextual>=8,<9\n"], None, True, True),
-        ([], "3.12", True, True),
-        ([], None, False, False),
+        ([], [], None, True, True),
+        (
+            ["numpy\npandas\npyarrow\n", "requests>3\ntextual>=8,<9\n"],
+            ["numpy", "pandas", "pyarrow", "requests>3", "textual>=8,<9"],
+            None,
+            True,
+            True,
+        ),
+        ([], [], "3.12", True, True),
+        ([], [], None, False, False),
     ],
 )
 def test_db_setup(
     db_bare: Database,
     ts_ref: datetime,
     requirements: list[str],
+    unpacked: list[tuple[str, str]],
     python: str | None,
     managed: bool,
-    download_auto: bool
+    download_auto: bool,
 ) -> None:
     db = init_db(
         db_bare,
@@ -61,14 +69,29 @@ def test_db_setup(
         cur.execute("select module, iso8601, version, delta from _code_")
         assert [("__main__", ts_ref.isoformat(), None, _DELTA_INIT)] == list(cur)
 
-        requirements_normalized = [
-            r for r in (req.strip() for req in " ".join(requirements).split()) if r
-        ]
-        cur.execute("select spec, resolved from _requirements_")
-        assert [(r, None) for r in requirements_normalized] == list(cur)
+        cur.execute("select requirement, resolved from _requirements_")
+        assert [(unp, None) for unp in unpacked] == list(cur)
 
         cur.execute("select python, managed, download_auto from _python_")
         assert [(python, int(managed), int(download_auto))] == list(cur)
+
+
+@pytest.mark.parametrize(
+    "reqs,expected",
+    [
+        (
+            ["numpy>2", "pandas", "cottagepy<2", "requests", "aiosqlite"],
+            ["numpy>2", "pandas", "cottagepy<2", "requests", "aiosqlite"],
+        ),
+        (
+            ["numpy>2"],
+            ["cottagepy", "numpy>2"],
+        ),
+    ],
+)
+def test_get_requirements_no_resolved(db: Database, reqs: list[str], expected: list[str]) -> None:
+    requirements.set(db=db, requirements=reqs)
+    assert expected == requirements.get(db)
 
 
 def test_redirection(capsys) -> None:
