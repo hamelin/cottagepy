@@ -21,6 +21,7 @@ classifiers = [
 dependencies = [
     "packaging>=26.0",
     "ruff>=0.15.7",
+    "uv>=0.10.12",
 ]
 
 [project.urls]

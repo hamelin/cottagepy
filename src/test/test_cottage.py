@@ -1,32 +1,37 @@
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 import pytest  # noqa
 import sys
+from uv import find_uv_bin
 import warnings
 
 from cottagepy import (
+    as_int_or_none,
+    _cottage_invocation,
     cursor,
     Database,
     _DELTA_INIT,
     init_db,
     repl,
     requirements,
+    _requirements_file,
 )
 
 
 @pytest.mark.parametrize(
     "requirements,unpacked,python,managed,download_auto",
     [
-        ([], [], None, True, True),
+        ([], [], None, None, None),
         (
             ["numpy\npandas\npyarrow\n", "requests>3\ntextual>=8,<9\n"],
             ["numpy", "pandas", "pyarrow", "requests>3", "textual>=8,<9"],
             None,
-            True,
-            True,
+            None,
+            None,
         ),
-        ([], [], "3.12", True, True),
+        ([], [], "3.12", True, None),
         ([], [], None, False, False),
     ],
 )
@@ -36,8 +41,8 @@ def test_db_setup(
     requirements: list[str],
     unpacked: list[tuple[str, str]],
     python: str | None,
-    managed: bool,
-    download_auto: bool,
+    managed: bool | None,
+    download_auto: bool | None,
 ) -> None:
     db = init_db(
         db_bare,
@@ -73,7 +78,7 @@ def test_db_setup(
         assert [(unp, None) for unp in unpacked] == list(cur)
 
         cur.execute("select python, managed, download_auto from _python_")
-        assert [(python, int(managed), int(download_auto))] == list(cur)
+        assert [(python, as_int_or_none(managed), as_int_or_none(download_auto))] == list(cur)
 
 
 @pytest.mark.parametrize(
@@ -92,6 +97,60 @@ def test_db_setup(
 def test_get_requirements_no_resolved(db: Database, reqs: list[str], expected: list[str]) -> None:
     requirements.set(db=db, requirements=reqs)
     assert expected == requirements.get(db)
+
+
+@pytest.mark.parametrize(
+    "reqs,expected",
+    [
+        ("numpy pandas", "cottagepy\nnumpy\npandas\n"),
+        ("requests<3 cottagepy>0.1 aiosqlite", "requests<3\ncottagepy>0.1\naiosqlite\n"),
+    ],
+)
+def test_requirements_file(db_bare: Database, reqs: str, expected: str, tmp_path: Path) -> None:
+    db = init_db(db_bare, requirements=reqs.split())
+    with _requirements_file(db=db, dir=tmp_path) as path:
+        assert expected == path.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "python,managed,download_auto,args_addl",
+    [
+        (None, None, None, []),
+        ("3.11", True, None, ["--python", "3.11", "--managed-python"]),
+        (None, False, True, ["--no-managed-python"]),
+        (None, True, False, ["--managed-python", "--no-python-downloads"]),
+    ],
+)
+def test_cottage_invocation(
+    db_bare: Database,
+    python: str | None,
+    managed: bool,
+    download_auto: bool,
+    args_addl: list[str],
+    tmp_path: Path,
+) -> None:
+    db = init_db(
+        db=db_bare,
+        python=python,
+        managed=managed,
+        download_auto=download_auto,
+    )
+    with _cottage_invocation(db=db, dir=tmp_path) as invocation:
+        for i in range(len(invocation)):
+            if invocation[i] == "--with-requirements":
+                assert Path(invocation[i + 1]).is_file()
+                del invocation[i : i + 2]
+                break
+        else:
+            pytest.fail("Could not find --with-requirements argument")
+        assert [
+            find_uv_bin(),
+            "run",
+            "--isolated",
+            *args_addl,
+            "-m",
+            "cottagepy._entry_point",
+        ] == invocation
 
 
 def test_redirection(capsys) -> None:

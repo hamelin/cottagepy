@@ -1,8 +1,14 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from difflib import unified_diff
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from uv import find_uv_bin
 
 from . import requirements as _requirements_
 from .database import connection, cursor, Database  # noqa
+from ._log import log
 from .modules import add_delta
 
 
@@ -25,8 +31,8 @@ def init_db(
     db: Database,
     requirements: list[str] = [],
     python: str | None = None,
-    managed: bool = True,
-    download_auto: bool = True,
+    managed: bool | None = None,
+    download_auto: bool | None = None,
     ts_main: datetime | None = None,
 ) -> Database:
     add_delta(
@@ -40,11 +46,17 @@ def init_db(
     return db
 
 
+def as_int_or_none(n: bool | None) -> int | None:
+    if n is None:
+        return n
+    return int(n)
+
+
 def _add_python_config(
+    python: str | None,
+    managed: bool | None,
+    download_auto: bool | None,
     db: Database | None = None,
-    python: str | None = None,
-    managed: bool = True,
-    download_auto: bool = True,
 ) -> None:
     with cursor(db) as cur:
         cur.executescript(
@@ -63,7 +75,61 @@ def _add_python_config(
             """,
             {
                 "python": python,
-                "managed": int(managed),
-                "download_auto": int(download_auto),
+                "managed": as_int_or_none(managed),
+                "download_auto": as_int_or_none(download_auto),
             },
         )
+
+
+@contextmanager
+def _requirements_file(db: Database | None = None, dir: Path | None = None) -> Iterator[Path]:
+    with NamedTemporaryFile(suffix=".txt", dir=dir, mode="w+", encoding="utf-8") as file:
+        for req in _requirements_.get(db=db):
+            print(req, file=file)
+        file.flush()
+        yield Path(file.name)
+
+
+def _python_options(db: Database | None = None) -> list[str]:
+    options = []
+    with cursor(db) as cur:
+        cur.execute(
+            """
+            select python, managed, download_auto
+            from _python_
+            order by rowid desc
+            limit 1
+            """,
+        )
+        config = cur.fetchone()
+
+    if config is None:
+        log.warning(
+            "No Python configuration present in cottage database; falling back to the trivial configuration."
+        )
+        return []
+    python, managed, download_auto = config
+    if python is not None:
+        options.extend(["--python", python])
+    if managed is not None:
+        options.append("--managed-python" if managed else "--no-managed-python")
+    if download_auto == 0:
+        options.append("--no-python-downloads")
+    return options
+
+
+@contextmanager
+def _cottage_invocation(
+    db: Database | None = None, dir: Path | None = None
+) -> Iterator[list[str]]:
+    with _requirements_file(db=db, dir=dir) as path_req:
+        yield [
+            find_uv_bin(),
+            "run",
+            "--isolated",
+            "--with-requirements",
+            str(path_req),
+            *_python_options(db=db),
+            "-m",
+            "cottagepy._entry_point",
+        ]
