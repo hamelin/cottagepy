@@ -7,16 +7,16 @@ from .database import cursor, Database
 def _set_up(cur: sqlite3.Cursor) -> None:
     cur.executescript(
         """
+        create table if not exists _metadata_(
+            document text primary key,
+            language text
+        );
+
         create table if not exists _deltas_(
             document text not null,
             iso8601 text not null default(datetime('now', 'localtime')),
             version text,
             delta text not null
-        );
-
-        create table if not exists _metadata_(
-            document text primary key,
-            language text
         );
         """
     )
@@ -56,6 +56,10 @@ def set_metadata(document: str, language: str | None, db: Database | None = None
     with cursor(db) as cur:
         _set_up(cur)
         cur.execute(
-            "insert into _metadata_(document, language) values(?, ?)",
+            """
+            insert into _metadata_(document, language)
+            values(?, ?)
+            on conflict(document) do update set language = excluded.language
+            """,
             (document, language),
         )
