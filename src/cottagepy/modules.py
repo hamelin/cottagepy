@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from datetime import datetime
 from packaging.requirements import Requirement
 import sqlite3
-from typing import cast
 
 from .database import cursor, Database
 
@@ -30,7 +29,7 @@ def add_delta(
     if not module:
         raise ValueError("Module name cannot be an empty string")
 
-    ts_ = cast(datetime, ts or datetime.now())
+    ts_ = ts or datetime.now()
     with cursor(db) as cur:
         _set_up(cur)
         cur.execute(

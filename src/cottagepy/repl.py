@@ -74,13 +74,15 @@ def run(
         if config.ps2 is not None:
             sys.ps2 = config.ps2
         d: dict = {}
-        code.interact(
-            banner=config.banner,
-            readfunc=readfunc,
-            local=d,
-            exitmsg=config.exitmsg,
-            local_exit=True,
-        )
+        try:
+            code.interact(
+                banner=config.banner,
+                readfunc=readfunc,
+                local=d,
+                exitmsg=config.exitmsg,
+            )
+        except SystemExit:
+            pass
         return d
     finally:
         if "ps1" in prompts:
