@@ -5,14 +5,14 @@ all: test type pep8
 
 tests: test
 
-test: reformat
+test: format
 	$(UV_RUN) pytest $(and $(dbg),--last-failed --trace) $(and $(failfast),-x) $(and $(pdb),--pdb) $(and $(only),-k "$(only)") src
 
-type: reformat
+type: format
 	$(UV_RUN) mypy --ignore-missing-imports src
 
-pep8: reformat
+pep8: format
 	$(UV_RUN) ruff check src
 
-reformat:
+format:
 	$(UV_RUN) ruff format src
