@@ -7,6 +7,7 @@ from cottagepy import (
     Database,
     diff_strings,
     documents,
+    patch,
 )
 
 
@@ -52,3 +53,136 @@ def test_replace_metadata(db: Database) -> None:
     with cursor(db) as cur:
         cur.execute("select document, language from _metadata_")
         assert [("__main__", "plain")] == list(cur)
+
+
+@pytest.mark.parametrize(
+    "left,right",
+    [
+        (
+            """\
+            asdf qwerty
+            zxcv heyhey hoho
+            """,
+            """\
+            asdf qwerty
+            zxcv heyhey hoho
+            """,
+        ),
+        (
+            """\
+            asdf qwerty
+            zxcv heyhey hoho
+            """,
+            """\
+            asdf qwerty
+            """,
+        ),
+        (
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+            """\
+            One kitty to another
+            and she got all the way over
+            """,
+        ),
+        (
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+            """\
+            Kitties, a limerick
+
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+        ),
+        (
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+
+            -- I don't count steps all that well
+            """,
+        ),
+        (
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+            """\
+            One kitty to another
+            heyhey!
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            hoho!
+            and she got all the way over
+            """,
+        ),
+        (
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+            """\
+            One kitty to another
+            heyhey
+            hoho
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+        ),
+        (
+            """\
+            One kitty to another
+            said I'd love to be yonder
+            and then she got up
+            and trotted and hop
+            and she got all the way over
+            """,
+            """\
+            One kitty to another
+            said I'd love to be over
+            and then she got up
+            and trotted and hop
+            and she got all the way yonder
+            """,
+        ),
+    ],
+)
+def test_delta_apply_revert(left: str, right: str) -> None:
+    left = dedent(left)
+    right = dedent(right)
+    delta = patch.diff(left, right)
+    assert right == patch.apply(left, delta)
+    assert left == patch.revert(right, delta)
