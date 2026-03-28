@@ -74,7 +74,7 @@ def test_db_setup(
         ] == list(cur)
 
         cur.execute("select document, iso8601, version, delta from _deltas_")
-        assert [("__main__", ts_ref.isoformat(), None, _DELTA_INIT)] == list(cur)
+        assert [("__main__", "2026-03-16 03:48:56.123765", None, _DELTA_INIT)] == list(cur)
         cur.execute("select document, language from _metadata_")
         assert [("__main__", "python")] == list(cur)
 

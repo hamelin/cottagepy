@@ -193,3 +193,69 @@ def test_delta_apply_revert(left: str, right: str) -> None:
     delta = patch.diff(left, right)
     assert right == patch.apply(left, delta)
     assert left == patch.revert(right, delta)
+
+
+@pytest.mark.parametrize(
+    "version,expected",
+    [
+        (
+            None,
+            """\
+            I wrote that first line,
+            then I changed my mind.
+            Then another paragraph.
+            """,
+        ),
+        (
+            "initial",
+            """\
+            I wrote that first line,
+            and then that second line.
+            """,
+        ),
+    ],
+)
+def test_get_document(db: Database, version: str | None, expected: str) -> None:
+    documents.set_metadata(db=db, document="mydoc", language="en")
+    edits = [
+        ("", None),
+        (
+            """\
+            I wrote that first line,
+            and then that second line.
+            """,
+            "initial",
+        ),
+        (
+            """\
+            I wrote that first line,
+            then I changed my mind
+            and then that second line.
+
+            Then another paragraph.
+            """,
+            None,
+        ),
+        (
+            """\
+            I wrote that first line,
+            then I changed my mind.
+            Then another paragraph.
+            """,
+            "final",
+        ),
+    ]
+
+    documents.set_metadata(db=db, document="mydoc", language="en")
+    for i in range(1, len(edits)):
+        pre, _ = edits[i - 1]
+        post, ver = edits[i]
+        documents.add_delta(
+            db=db, document="mydoc", delta=patch.diff(dedent(pre), dedent(post)), version=ver
+        )
+
+    assert documents.Document(text=dedent(expected), language="en") == documents.get_document(
+        db=db,
+        document="mydoc",
+        version=version,
+    )

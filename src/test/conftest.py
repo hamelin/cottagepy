@@ -9,7 +9,7 @@ from cottagepy import Database, init_db
 
 @pytest.fixture
 def ts_ref() -> datetime:
-    return datetime.fromisoformat("2026-03-15T22:48:56-05:00")
+    return datetime.fromisoformat("2026-03-15T22:48:56.123765-05:00")
 
 
 @pytest.fixture
