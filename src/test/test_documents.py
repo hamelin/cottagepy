@@ -5,7 +5,6 @@ from textwrap import dedent
 from cottagepy import (
     cursor,
     Database,
-    diff_strings,
     documents,
     patch,
 )
@@ -13,7 +12,7 @@ from cottagepy import (
 
 @pytest.fixture
 def delta_hello() -> str:
-    return diff_strings(
+    return patch.diff(
         "",
         dedent(
             """\

@@ -1,12 +1,11 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime
-from difflib import unified_diff
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from uv import find_uv_bin
 
-from . import requirements as _requirements_
+from . import patch, requirements as _requirements_
 from .database import cursor, Database
 from .documents import add_delta, set_metadata
 from ._log import log
@@ -18,13 +17,7 @@ from cottagepy.repl import run
 if __name__ == "__main__":
     run(cottage)
 """
-
-
-def diff_strings(left: str, right: str) -> str:
-    return "".join(unified_diff(left.splitlines(keepends=True), right.splitlines(keepends=True)))
-
-
-_DELTA_INIT = diff_strings("", ENTRY_POINT_INIT)
+_DELTA_INIT = patch.diff("", ENTRY_POINT_INIT)
 
 
 def init_db(
