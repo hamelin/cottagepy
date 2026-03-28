@@ -59,6 +59,13 @@ def test_replace_metadata(db: Database) -> None:
     "left,right",
     [
         (
+            "",
+            """\
+            heyhey
+            hoho
+            """,
+        ),
+        (
             """\
             asdf qwerty
             zxcv heyhey hoho

@@ -33,7 +33,7 @@ class Editor:
         return self.index + 1
 
     def go_to(self, num_line: int) -> None:
-        index = num_line - 1
+        index = max(0, num_line - 1)
         if index > len(self.lines):
             raise ValueError("Cannot set index past length of line array")
         self.index = index
